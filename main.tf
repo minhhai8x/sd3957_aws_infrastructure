@@ -1,13 +1,9 @@
 provider "aws" {
-  profile = "default"
   region  = var.aws_region
 }
 
 data "aws_availability_zones" "available" {
-  filter {
-    name   = "opt-in-status"
-    values = ["opt-in-not-required"]
-  }
+  state = "available"
 }
 
 # VPC
@@ -23,13 +19,24 @@ resource "aws_vpc" "main_vpc" {
 
 # Create subnets
 resource "aws_subnet" "public_subnets" {
-  count = length(var.public_subnet_cidr_blocks)
+  count      = length(var.public_subnet_cidr_blocks)
+  vpc_id     = aws_vpc.main_vpc.id
+  cidr_block = element(var.public_subnet_cidr_blocks, count.index)
 
-  vpc_id            = aws_vpc.main_vpc.id
-  cidr_block        = var.public_subnet_cidr_blocks[count.index]
+  availability_zone = element(data.aws_availability_zones.available.names, count.index)
 
   tags = {
-    Name = "${var.resource_prefix}-public-subnet${count.index + 1}"
+    Name = "Public Subnet ${count.index + 1}"
+  }
+}
+
+resource "aws_subnet" "private_subnets" {
+  count      = length(var.private_subnet_cidr_blocks)
+  vpc_id     = aws_vpc.main_vpc.id
+  cidr_block = element(var.private_subnet_cidr_blocks, count.index)
+ 
+  tags = {
+    Name = "Private Subnet ${count.index + 1}"
   }
 }
 
@@ -76,8 +83,8 @@ resource "aws_ecr_repository" "main_ecr_repository" {
 
 # Create AWS instance
 resource "aws_instance" "web_server" {
-  ami               = "ami-0c96853ba78c71c17" 
-  instance_type     = "t3.small"
+  ami               = "${var.ami_id}"
+  instance_type     = "${var.instance_type}"
   availability_zone = data.aws_availability_zones.available.names[0]
   key_name          = var.ec2_keypair
   associate_public_ip_address = true

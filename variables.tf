@@ -21,6 +21,12 @@ variable "public_subnet_cidr_blocks" {
   default     = ["10.0.1.0/24", "10.0.2.0/24", "10.0.3.0/24"]
 }
 
+variable "private_subnet_cidr_blocks" {
+ type        = list(string)
+ description = "The CIDR blocks for the private subnets."
+ default     = ["10.0.4.0/24", "10.0.5.0/24", "10.0.6.0/24"]
+}
+
 variable "eks_cluster_name" {
   description = "The name of the EKS cluster."
   default     = "sd3957-aws-resource-ecr-cluster"
@@ -36,7 +42,17 @@ variable "ec2_jenkins_docker_server" {
   default     = "sd3957-aws-resource-Jenkins-Docker-Server"
 }
 
+variable "ami_id" {
+  description = "The AMI to use"
+  default = "ami-01811d4912b4ccb26"
+}
+
+variable "instance_type" {
+  type = string
+  default = "t2.micro"
+}
+
 variable "ec2_keypair" {
   description = "The name of the AWS EC2 keypair."
-  default     = "sd3957-aws-resource-keypair"
+  default     = "practical-devops-key-pair"
 }
